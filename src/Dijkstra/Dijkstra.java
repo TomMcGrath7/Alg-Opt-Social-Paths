@@ -1,0 +1,82 @@
+package Dijkstra;
+
+import java.util.*;
+
+public class Dijkstra {
+    public static int minDistance(int dist[], Boolean sptSet[])
+    {
+        // Initialize min value
+        int min = Integer.MAX_VALUE, min_index = -1;
+
+        for (int v = 0; v < dist.length; v++)
+            if (sptSet[v] == false && dist[v] <= min) {
+                min = dist[v];
+                min_index = v;
+            }
+
+        return min_index;
+    }
+
+    // Function that implements Dijkstra's single source
+    // shortest path algorithm for a graph represented using
+    // adjacency matrix representation
+    public static List<Integer> dijkstra(int graph[][], int src, int end)
+    {
+        int dist[] = new int[graph.length]; // The output array.
+        List<List<Integer>> shortestPath = new ArrayList<>();
+        while(shortestPath.size()<graph.length){
+            shortestPath.add(new ArrayList<>(List.of(src)));
+        }
+        // dist[i] will hold
+        // the shortest distance from src to i
+
+        // sptSet[i] will true if vertex i is included in
+        // the shortest path tree or shortest distance from src
+        // to i is finalized
+        Boolean sptSet[] = new Boolean[graph.length];
+
+        // Initialize all distances as INFINITE and stpSet[]
+        // as false
+        for (int i = 0; i < graph.length; i++) {
+            dist[i] = Integer.MAX_VALUE;
+            sptSet[i] = false;
+        }
+
+        // Distance of source vertex from itself is always 0
+        dist[src] = 0;
+
+        // Find the shortest path for all vertices
+        for (int count = 0; count < graph.length - 1; count++) {
+            // Pick the minimum distance vertex from the set
+            // of vertices not yet processed. u is always
+            // equal to src in first iteration.
+            int u = minDistance(dist, sptSet);
+
+            // Mark the picked vertex as processed
+            sptSet[u] = true;
+
+            // Update dist value of the adjacent vertices of
+            // the picked vertex.
+            for (int v = 0; v < graph.length; v++)
+
+                // Update dist[v] only if is not in sptSet,
+                // there is an edge from u to v, and total
+                // weight of path from src to v through u is
+                // smaller than current value of dist[v]
+                if (!sptSet[v] && graph[u][v] != 0
+                        && dist[u] != Integer.MAX_VALUE
+                        && dist[u] + graph[u][v] < dist[v])
+                {
+                    dist[v] = dist[u] + graph[u][v];
+                    shortestPath.get(v).clear();
+                    shortestPath.get(v).addAll(shortestPath.get(u));
+                    shortestPath.get(v).add(v);
+                }
+
+
+        }
+
+        // print the constructed distance array
+        return shortestPath.get(end);
+    }
+}
