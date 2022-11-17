@@ -33,7 +33,10 @@ public class Helper {
             }
         }
         StringBuilder sb = new StringBuilder();
+        int counter = 1;
         for (int[] objects : mat) {
+            sb.append(counter).append("-");
+            counter++;
             for (int object : objects) {
                 int size = Integer.toString(object).length();
                 sb.append(object);
@@ -46,7 +49,15 @@ public class Helper {
         }
         return sb.toString();
     }
-
+/*1|2|3|4|5|6|7|
+1-0|1|0|0|0|1|0|
+2-1|0|1|0|1|0|1|
+3-0|1|0|1|0|1|1|
+4-0|0|1|0|0|0|0|
+5-0|1|0|0|0|1|1|
+6-1|0|1|0|1|0|1|
+7-0|1|1|0|1|1|0|
+ */
     public static String adjacencyListString(List<List<Integer>> a){
         StringBuilder sb = new StringBuilder();
         sb.append(0).append(": ").append(a.get(0));
