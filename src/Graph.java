@@ -1,10 +1,11 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
 /**
- * -1 to every vertex value from input file because they start at 1
- * => !!! output will be offset by -1 !!!
+ * Graph with edges represented as:
+ * <p> - adjacency matrix
+ * <p> - adjacency list
+ * <p> Also generates distance matrix representing the # of vertex between each pair of vertices.
+ * @implNote  vertex values go from 0 to N-1. Input file has vertex values from 1 to N !!! -1 to output vertex values !!!
  */
 public class Graph {
 
@@ -12,9 +13,14 @@ public class Graph {
 
     public List<List<Integer>> adjacencyList;
     public int[][] distanceMatrix;
-    public Graph(int numVerts, String[] edges){
 
-        this.adjacencyMatrix = new int[numVerts][numVerts];
+    /**
+     * @param vertNum number of vertices N
+     * @param edges edges represented in string form (x y <- where x and y are vertex indices 1 to N)
+     */
+    public Graph(int vertNum, String[] edges){
+
+        this.adjacencyMatrix = new int[vertNum][vertNum];
 
         for (String edge : edges) {
             String[] ends = edge.split(" ");
@@ -22,43 +28,72 @@ public class Graph {
             adjacencyMatrix[endsi[0]-1][endsi[1]-1] = 1;
             adjacencyMatrix[endsi[1]-1][endsi[0]-1] = 1;
         }
-        distanceMatrix = Helper.distanceMatrix(adjacencyMatrix);
+        distanceMatrix = Graph.generateDistanceMatrix(adjacencyMatrix);
 
-        adjacencyList = Helper.toAdjacencyList(adjacencyMatrix);
+        adjacencyList = Graph.generateAdjacencyMatrix(adjacencyMatrix);
     }
 
+    /**
+     * @param newAjd adjacency graph representing graph
+     * */
     public Graph(int[][] newAjd) {
         adjacencyMatrix = newAjd;
-        distanceMatrix = Helper.distanceMatrix(adjacencyMatrix);
+        distanceMatrix = Graph.generateDistanceMatrix(adjacencyMatrix);
     }
 
-    public Graph removeNodesAround(int node, int distance){
-        int[] distances = distanceMatrix[node];
-        List<Integer> toRemove = new ArrayList<>();
-        for (int i = 0; i < distances.length; i++) {
-            if(distances[i]<=distance){
-                toRemove.add(i);
-            }
-        }
-        System.out.println(Arrays.toString(distances));
-        System.out.println(toRemove);
-        int[][] newAjd = adjacencyMatrix.clone();
-        for (int i = 0; i < distances.length; i++) {
-            for (Integer n : toRemove) {
-                newAjd[i][n] = 0;
-                newAjd[n][i] = 0;
-            }
-        }
-
-        return new Graph(newAjd);
-    }
     @Override
     public String toString() {
 
         return "Graph{" +
-                "adjacencyMatrix=\n" + Helper.adjacencyMatrixString(adjacencyMatrix) +
-                ", distanceMatrix=\n" + Helper.adjacencyMatrixString(distanceMatrix) +
+                "adjacencyMatrix=\n" + Helper.matrix2DString(adjacencyMatrix) +
+                ", distanceMatrix=\n" + Helper.matrix2DString(distanceMatrix) +
                 "\n, list=\n" + Helper.adjacencyListString(adjacencyList) +
                 '}';
+    }
+
+    public static int[][] generateDistanceMatrix(int[][] adjacencyMatrix){
+        int[][] distanceMatrix = new int[adjacencyMatrix.length][adjacencyMatrix.length];
+        for (int i = 0; i < distanceMatrix.length; i++) {
+            for (int j = 0; j < distanceMatrix[i].length; j++) {
+                if(i==j){
+                    continue;
+                }
+                distanceMatrix[i][j] = adjacencyMatrix[i][j]==0? Integer.MAX_VALUE : adjacencyMatrix[i][j];
+            }
+        }
+        for (int i = 0; i < distanceMatrix.length; i++) {
+
+            for (int j = 0; j < distanceMatrix[i].length; j++) {
+                distanceMatrix[i][j] = minSum(distanceMatrix[i], distanceMatrix[j]);
+                distanceMatrix[j][i] = distanceMatrix[i][j];
+            }
+        }
+        return distanceMatrix;
+    }
+
+    public static List<List<Integer>> generateAdjacencyMatrix(int[][] adjMat){
+        List<List<Integer>> adjL = new ArrayList<>();
+        while(adjL.size()<=adjMat.length) adjL.add(new ArrayList<>());
+
+        for (int i = 0; i < adjMat.length; i++) {
+            for (int j = i; j < adjMat[i].length; j++) {
+                if(adjMat[i][j]==1){
+                    adjL.get(i).add(j);
+                    adjL.get(j).add(i);
+                }
+            }
+        }
+        return adjL;
+    }
+
+    private static int minSum(int[] ar1, int[] ar2){
+        int min = Integer.MAX_VALUE;
+        for (int i = 0; i < ar1.length; i++) {
+            if(ar1[i]+ar2[i]<0){
+                continue;
+            }
+            min = Math.min(min, ar1[i]+ar2[i]);
+        }
+        return min;
     }
 }

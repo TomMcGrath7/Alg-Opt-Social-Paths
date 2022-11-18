@@ -2,38 +2,73 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/** Represents a specific node in tree, a positions of individuals + path taken to get there (AKA parent).
+ * Not just the positions because many paths can be taken to reach a single position.
+ */
 public class Node {
 
+    List<Node> children;
     public int[] positions;
     public Node parent;
     public boolean visited;
 
     public int depth;
-    public Node(int[] positions, Node parent, boolean visited, int depth){
+    public Node(int[] positions, Node parent, boolean visited){
         this.positions = positions;
         this.parent = parent;
         this.visited = visited;
-        this.depth = depth;
+        children = new ArrayList<>();
+        if(this.parent!=null) {
+            this.parent.children.add(this);
+            this.depth = parent.depth+1;
+        }else{
+            depth = 0;
+        }
     }
 
-    public List<List<Integer>> backStack(int toAdd){
-        if(parent==null){
-            List<List<Integer>> l = new ArrayList<>();
-            for (int i = 0; i < positions.length; i++) {
-                l.add(new ArrayList<>());
-                l.get(i).add(positions[i]+toAdd);
+    public List<int[]> statePath(){
+        List<int[]> path = new ArrayList<>();
+        if(parent!=null){
+            path.addAll(parent.statePath());
+        }
+        path.add(positions);
+        return path;
+    }
+
+    public void merge(){
+
+        if(parent!=null && parent.parent!=null){ // if reached top of tree
+            int[] gppos = parent.parent.positions;
+            int[] pos = positions;
+            if(gppos[0]!=pos[0] && gppos[1] != pos[1]){ // if players alternate moves
+                // Make sure both moving at once won't make them too close
+                parent = parent.parent;
             }
-            return l;
+            parent.merge();
         }
-        List<List<Integer>> l = parent.backStack(toAdd);
-        for (int i = 0; i < positions.length; i++) {
-            l.get(i).add(positions[i]+toAdd);
-        }
-        return l;
     }
-
     @Override
     public String toString() {
         return parent+" "+depth+"-"+Arrays.toString(positions);
+    }
+
+    public String treeString(){
+        return treeString(0, 0);
+    }
+    private String treeString(int relativeDepth, int num){
+        StringBuilder sb = new StringBuilder();
+        sb.append("\t".repeat(relativeDepth)).append(num).append(".").append(Arrays.toString(positions));
+        for (int i = 0; i < children.size(); i++) {
+            sb.append("\n").append(children.get(i).treeString(relativeDepth+1, i));
+        }
+        return sb.toString();
+    }
+
+    public int size(){
+        int n = children.size();
+        for (Node child : children) {
+            n+= child.size();
+        }
+        return n;
     }
 }
