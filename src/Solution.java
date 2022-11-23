@@ -99,7 +99,7 @@ class Solution{
                 // Transition violation
                 if(current[p1]!=next[p1] && instance.graph.adjacencyMatrix[current[p1]][next[p1]]!=1){
                     System.out.println("Transition Violation:");
-                    System.out.println("Position now "+ current +" Position next "+ next);
+                    System.out.println("Position now "+ Arrays.toString(current) +" Position next "+ Arrays.toString(next));
                     System.out.println("Adjacency matrix\n"+Helper.matrix2DString(instance.graph.adjacencyMatrix));
 
                     return false;

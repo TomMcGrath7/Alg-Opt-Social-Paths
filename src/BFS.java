@@ -6,18 +6,23 @@ import java.util.Queue;
 public class BFS {
 
     public static Node root;
+
     /**
-     * @param instance problem instance
-     * @param verbose printing
-     * @return first/highest node in the tree that has the target destinations if found, else null.
-     * AKA the fastest way to reach the target destinations given the limits
-     * <p><p>
-     * Given a problem instance, execute breadth first search on s tree that has:
+     * Given a problem instance, execute breadth first search on a tree that has:
      * <p>- the starting position of each individual as root
-     * <p>- branching done by allowing only one move at a time
+     * <p>- the ending position of each individual as terminating node
      * <p>- maximum depth of T
+     * <p>- branching done by allowing only one move at a time
      * <p>- pruning1: each position that has already been visited cannot generate a new node
      * <p>- pruning2: each position that violates the distance constraint not generated
+     * <p></p>
+     * @param instance instance of problem
+     * @param verbose prints width at different depths if true
+     * @param move1D does 1 dimensional moves if true, otherwise everyone can move at the same time
+     * @return first node in the tree that has the target destinations if found, else null.
+     * <p></p>
+     * @implNote 1D: O(n^(1+p)p^3). not 1D: O(n^(2+p)p^2) => 1D: O(n^(1+p)). not 1D: O(n^(2+p)) asymptotically.
+     * The 1D moves reduce complexity by a factor of n.
      */
     public static Solution search(Instance instance, boolean verbose, boolean move1D){
 
@@ -46,7 +51,7 @@ public class BFS {
         boolean[][] createdPositions = new boolean[instance.graph.adjacencyMatrix.length][instance.graph.adjacencyMatrix.length];  // TODO p>2? pD array or p nested lists
         createdPositions[root.positions[0]][root.positions[1]] =true;
 
-        while(!queue.isEmpty()){ // TODO how big is this??? worst case np^T? Insanely high. Never even gets close
+        while(!queue.isEmpty()){ // There are only n^p unique states => n^p loops of 1D O(np^3) or not 1D O(n^2p^2) => 1D: O(n^(1+p)p^3). not 1D: O(n^(2+p)p^2)
             Node cur = queue.remove();
             cur.visited = true;
 
@@ -75,7 +80,7 @@ public class BFS {
             }
         }
         return new Solution(null, (System.currentTimeMillis() - start)/1000.0, move1D);
-    }
+    } // 1D: O(n^(1+p)p^3). not 1D: O(n^(2+p)p^2)
 
     /**
      * Creates all possible states that can occur given current state if only one individual moves at a time, for each individual, with depth+1, and add to queue
