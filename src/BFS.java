@@ -30,125 +30,152 @@ public class BFS {
         // Initialize root node as the starting position of individuals
         Node root;
         if(move1D){
-            root = new Node1D(instance.starts, null, false,-1);
+            root = new Node1D(instance.starts, null, false,-1); // O(p) (O(1) in reality)
         }
         else{
-            root = new Node(instance.starts, null, false);
+            root = new Node(instance.starts, null, false); // O(1)
         }
         BFS.root = root;
         queue.add(root);
 
-        // To know when the next depth of the tree starts being explored
-        int prev = root.depth;
-        // Pruning step: if a unique position has already been seen, there is no reason to explore it again
+        int prev = root.depth; // Can be removed. Is not used by algorithm. Only printing
+
+        // Pruning step: if a unique position (for each individual) has already been seen, there is no reason to explore it again at deeper depth
         // Impossible for it to result in a better solution because of BFS
         // => Removing it all together reduces the amount options dramatically as the tree expands
-        int[][] createdPositions = new int[instance.graph.adjacencyMatrix.length][instance.graph.adjacencyMatrix.length]; // TODO nD array for n individuals
-        createdPositions[root.positions[0]][root.positions[1]] =1;
-        // To alternate who moves (Otherwise first will move to its target, then the 2nd will, etc...)
-        int currentMover = 0;
+        boolean[][] createdPositions = new boolean[instance.graph.adjacencyMatrix.length][instance.graph.adjacencyMatrix.length];  // TODO p>2? pD array or p nested lists
+        createdPositions[root.positions[0]][root.positions[1]] =true;
 
-        while(!queue.isEmpty()){
+        while(!queue.isEmpty()){ // TODO how big is this??? worst case np^T? Insanely high. Never even gets close
             Node cur = queue.remove();
             cur.visited = true;
 
             // If reached target destination for all => solution found.
-            if(Arrays.equals(cur.positions, instance.ends)){
+            if(Arrays.equals(cur.positions, instance.ends)){ // O(1)
                 return new Solution(cur, (System.currentTimeMillis() - start)/1000.0, move1D);
             }
 
-            // If depth greater than T => node too deep => skip
-            // T * # of individuals: Moves are done in 1D but in reality everyone can move at once.
-            // TODO think about this. Does this work?
-            //  Because if in 2D move the players can only move one at a time anyways, then this would find a path
-            //  that is 2x too long (?).
-            // ^ Not important because BFS returns shorts path anyways so if shortest path is longer than T => no solution
-            if(cur.depth>=instance.T*numIndividuals){
+            // If turns taken is greater than T => node too deep => skip
+            if( (move1D && ((Node1D)cur).turn>=instance.T) || (!move1D && cur.depth>=instance.T)){ // O(1)
                 continue;
             }
 
-            // If next depth => next player gets the options to move first
+            // Irrelevant. Only printing.
             if(cur.depth!=prev){
-                currentMover = (currentMover+1)%numIndividuals;
                 prev = cur.depth;
                 if(verbose){
                     System.out.println("Width at depth "+cur.depth+": "+queue.size());
                 }
             }
+
             if(move1D) {
-                // Make who has the opportunity to move first alternate => makes compacting the final chain easier
-                int i = currentMover;
-                do {
-                    // If current position isn't valid, an individual who hasn't moved yet needs to resolve the issue
-                    if(!isValid(cur.positions, instance.graph.distanceMatrix, instance.D, null) && ((Node1D)cur).moved[i]){
-                        i = (i + 1) % numIndividuals;
-                        continue;
-                    }
-                    // Generate all 1D moves that the individual can take and add to queue
-                    List<Integer> options = instance.graph.adjacencyList.get(cur.positions[i]);
-                    Create1DMoves(i, options, cur, instance, queue, createdPositions);
-                    i = (i + 1) % numIndividuals;
-                } while (i != currentMover);
+                Create1DMoves((Node1D) cur, instance, queue, createdPositions, numIndividuals); // O(np^3) and queue.size += np at most
             }else{
-                CreateMultiDMoves(cur, instance, queue, createdPositions);
+                CreateMultiDMoves(cur, instance, queue, createdPositions); // O(n^2p^2) and queue.size += n^2 at most
             }
         }
         return new Solution(null, (System.currentTimeMillis() - start)/1000.0, move1D);
     }
 
     /**
-     * For every option of an individual, do it and add it to the queue with current depth+1
-     * @param individual index that gets to move
-     * @param options options of the given individual
+     * Creates all possible states that can occur given current state if only one individual moves at a time, for each individual, with depth+1, and add to queue
      * @param cur node being expanded
      * @param instance problem instance
      * @param queue BFS queue
      * @param createdPositions positions that have already been created earlier in the tree => no need to explore at deeper depths.
+     * @param numIndividuals number of individuals in current instance
+     * @implNote O(np^3) => O(n) asymptotically. Worst case: generates np nodes.
      */
-    private static void Create1DMoves(int individual, List<Integer> options, Node cur, Instance instance, Queue<Node> queue, int[][] createdPositions){
+    private static void Create1DMoves(Node1D cur, Instance instance, Queue<Node> queue, boolean[][] createdPositions, int numIndividuals){
+        int firstMove = 0;
+        // Make who has the opportunity to move first change each sub-turn
+        // => stops an individual from moving to its final destination individually and then the next one, etc...
+        if(cur.parent!=null){
+            firstMove = (cur.mover+1)%numIndividuals;
+        }
 
-        for (Integer move : options) {
-            int[] curAr = new int[cur.positions.length];
-            System.arraycopy(cur.positions, 0, curAr, 0, curAr.length);
+        int i = firstMove;
+        do {
+            // If current position isn't valid, an individual who hasn't moved this turn (not depth!) needs to resolve the issue
+            if(!isValid(cur.positions, instance.graph.distanceMatrix, instance.D, null) && (cur).moved[i]){ // O(p^2)
+                i = (i + 1) % numIndividuals;
+                continue;
+            }
+
+            // Generate all 1D moves that the individual can take and add to queue
+            CreateIndividualMoves(cur, instance, queue, createdPositions, i); // O(np^2)
+            i = (i + 1) % numIndividuals;
+
+        } while (i != firstMove); // p loops of O(np^2) => O(np^3)
+    } // O(np^3) => O(n)
+
+    /**
+     * Creates all possible states that can occur given current state if only one individual moves at a time, with depth+1, and add to queue
+     * @param cur node being expanded
+     * @param instance problem instance
+     * @param queue BFS queue
+     * @param createdPositions positions that have already been created earlier in the tree => no need to explore at deeper depth
+     * @param individual index that gets to move
+     * @implNote O(np^2) => O(n) asymptotically. Worst case: generates n nodes
+     */
+    private static void CreateIndividualMoves(Node cur, Instance instance, Queue<Node> queue, boolean[][] createdPositions, int individual){
+        List<Integer> options = instance.graph.adjacencyList.get(cur.positions[individual]);
+        for (Integer move : options) { // n loops of O(p^2)
+            int[] curAr = new int[cur.positions.length]; // O(p)
+            System.arraycopy(cur.positions, 0, curAr, 0, curAr.length); // O(p)
 
             curAr[individual] = move;
 
-            if(createdPositions[curAr[0]][curAr[1]]==0 && isValid(curAr, instance.graph.distanceMatrix, instance.D, ((Node1D)cur).moved)){
+            if(!createdPositions[curAr[0]][curAr[1]] && isValid(curAr, instance.graph.distanceMatrix, instance.D, ((Node1D)cur).moved)){
                 queue.add(new Node1D(curAr, cur, false, individual));
-                createdPositions[curAr[0]][curAr[1]] = 1;
-            }
-        }
-    }
+                createdPositions[curAr[0]][curAr[1]] = true;
+            } // O(p^2)
+        } // O(np^2)
+    } // O(np^2) = O(n)
 
-    private static void CreateMultiDMoves(Node cur, Instance instance, Queue<Node> queue, int[][] createdPositions){
+    /**
+     * Creates all possible states that can occur given current state, with depth+1, and add to queue
+     * @param cur node being expanded
+     * @param instance problem instance
+     * @param queue BFS queue
+     * @param createdPositions positions that have already been created earlier in the tree => no need to explore at deeper depths
+     * @implNote O(n^2p^2) => O(n^2) asymptotically. Worst case: generates n^2 nodes.
+     */
+    private static void CreateMultiDMoves(Node cur, Instance instance, Queue<Node> queue, boolean[][] createdPositions){
+        // TODO p>2? options list for each individual
         List<Integer> options1 = instance.graph.adjacencyList.get(cur.positions[0]);
-        options1.add(cur.positions[0]);
+        options1.add(cur.positions[0]); // size = n+1
         List<Integer> options2 = instance.graph.adjacencyList.get(cur.positions[1]);
-        options2.add(cur.positions[1]);
+        options2.add(cur.positions[1]); // size = n+1
 
-        for (Integer op1 : options1) {
-            for (Integer op2 : options2) {
+        for (Integer op1 : options1) { // n+1 loops of O(p^2) => O(n^2p^2)
+            for (Integer op2 : options2) { // n+1 loops of O(1) => O(np^2)
                 int[] curAr = new int[cur.positions.length];
                 curAr[0] = op1;
                 curAr[1] = op2;
-                if(createdPositions[curAr[0]][curAr[1]]==0 && isValid(curAr, instance.graph.distanceMatrix, instance.D, null)){
-                    queue.add(new Node(curAr, cur, false));
-                    createdPositions[curAr[0]][curAr[1]] = 1;
+                if(!createdPositions[curAr[0]][curAr[1]] && isValid(curAr, instance.graph.distanceMatrix, instance.D, null)){ // O(p^2)
+                    queue.add(new Node(curAr, cur, false)); // O(1)
+                    createdPositions[curAr[0]][curAr[1]] = true;
                 }
             }
         }
-    }
+    } // O(n^2p^2) = O(n^2)
 
     /**
-     * Checks if all pairs of individuals are D apart
+     * Checks if all pairs of individuals are D apart.
+     * Allows an individual to move within the distance limit of another if the other hasn't moved yet
+     * This is because if the other hasn't moved yet => he can move away from the ones that are too close in the same turn
      * @param positions current position of everyone
      * @param distanceMatrix # edges vertices between every pair of vertices
      * @param D min distance allowed
      * @return true if no one is too close, else true
+     * @implNote O(p^2) => O(1) asymptotically
      */
     public static boolean isValid(int[] positions, int[][] distanceMatrix, int D, boolean[] moved){
-        for (int i = 0; i < positions.length; i++) {
-            for (int j = i+1; j < positions.length; j++) {
+        for (int i = 0; i < positions.length; i++) { // p loops of O(p) => O(p^2)
+            for (int j = i+1; j < positions.length; j++) { // p loops of O(1) => O(p)
+                // Allows an individual to move within the distance limit of another if the other hasn't moved yet
+                // This is because if the other hasn't moved yet => he can move away from the ones that are too close in the same turn
                 int dist = moved==null? D: moved[i]|| moved[j]? D : D-1;
                 if(distanceMatrix[positions[i]][positions[j]]<=dist){
                     return false;
@@ -156,5 +183,5 @@ public class BFS {
             }
         }
         return true;
-    }
+    } // O(p^2) = O(1)
 }

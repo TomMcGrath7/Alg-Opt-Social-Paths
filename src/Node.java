@@ -13,7 +13,7 @@ public class Node {
     public boolean visited;
 
     public int depth;
-    public Node(int[] positions, Node parent, boolean visited){
+    public Node(int[] positions, Node parent, boolean visited){ // O(1)
         this.positions = positions;
         this.parent = parent;
         this.visited = visited;
@@ -35,18 +35,6 @@ public class Node {
         return path;
     }
 
-    public void merge(){
-
-        if(parent!=null && parent.parent!=null){ // if reached top of tree
-            int[] gppos = parent.parent.positions;
-            int[] pos = positions;
-            if(gppos[0]!=pos[0] && gppos[1] != pos[1]){ // if players alternate moves
-                // Make sure both moving at once won't make them too close
-                parent = parent.parent;
-            }
-            parent.merge();
-        }
-    }
     @Override
     public String toString() {
         return parent+" "+depth+"-"+Arrays.toString(positions);

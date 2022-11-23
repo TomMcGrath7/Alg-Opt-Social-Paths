@@ -5,10 +5,10 @@ import java.util.List;
 class Solution{
 
     // entry i of list is positions of each individual is at step i of solution
-    private final List<int[]> states;
-    private final List<List<Integer>> paths;
-    private final int K;
-    private final double time; // in seconds
+    public final List<int[]> states;
+    public final List<List<Integer>> paths;
+    public final int K;
+    public final double time; // in seconds
 
     public Solution(Node node, double timeInSeconds, boolean move1D){
         this.time = timeInSeconds;
