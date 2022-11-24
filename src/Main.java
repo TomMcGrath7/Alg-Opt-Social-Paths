@@ -20,7 +20,7 @@ public class Main {
         first int: 0=no print, 1=print results, 2=print results if different
         2nd int: 0=no print, 1=print width of tree for each depth
         */
-        run(directory+"/grid10-1.in", new int[]{1, 0}, true);
+        run(directory+"/grid10-3-randomized.in", new int[]{1, 0}, true);
         //runOnAll(directory, new int[]{1, 0}, true);
 
 

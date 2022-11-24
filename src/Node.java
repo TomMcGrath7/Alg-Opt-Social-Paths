@@ -35,9 +35,17 @@ public class Node {
         return path;
     }
 
+    public int size(){
+        int n = children.size();
+        for (Node child : children) {
+            n+= child.size();
+        }
+        return n;
+    }
+
     @Override
     public String toString() {
-        return parent+" "+depth+"-"+Arrays.toString(positions);
+        return depth+"-"+Arrays.toString(positions);
     }
 
     public String treeString(){
@@ -52,11 +60,7 @@ public class Node {
         return sb.toString();
     }
 
-    public int size(){
-        int n = children.size();
-        for (Node child : children) {
-            n+= child.size();
-        }
-        return n;
+    public String toDeepString(){
+        return parent.toDeepString() + this.toString();
     }
 }

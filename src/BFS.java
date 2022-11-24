@@ -1,7 +1,4 @@
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 public class BFS {
 
@@ -29,8 +26,6 @@ public class BFS {
         long start = System.currentTimeMillis();
 
         Queue<Node> queue = new LinkedList<>();
-
-        int numIndividuals = instance.starts.length;
 
         // Initialize root node as the starting position of individuals
         Node root;
@@ -74,7 +69,7 @@ public class BFS {
             }
 
             if(move1D) {
-                Create1DMoves((Node1D) cur, instance, queue, createdPositions, numIndividuals); // O(np^3) and queue.size += np at most
+                Create1DMoves((Node1D) cur, instance, queue, createdPositions); // O(np^3) and queue.size += np at most
             }else{
                 CreateMultiDMoves(cur, instance, queue, createdPositions); // O(n^2p^2) and queue.size += n^2 at most
             }
@@ -88,30 +83,24 @@ public class BFS {
      * @param instance problem instance
      * @param queue BFS queue
      * @param createdPositions positions that have already been created earlier in the tree => no need to explore at deeper depths.
-     * @param numIndividuals number of individuals in current instance
      * @implNote O(np^3) => O(n) asymptotically. Worst case: generates np nodes.
      */
-    private static void Create1DMoves(Node1D cur, Instance instance, Queue<Node> queue, boolean[][] createdPositions, int numIndividuals){
-        int firstMove = 0;
+    private static void Create1DMoves(Node1D cur, Instance instance, Queue<Node> queue, boolean[][] createdPositions){
         // Make who has the opportunity to move first change each sub-turn
         // => stops an individual from moving to its final destination individually and then the next one, etc...
-        if(cur.parent!=null){
-            firstMove = (cur.mover+1)%numIndividuals;
+        List<Integer> movePrio = new ArrayList<>();
+        for (int i = 0; i < cur.moved.length; i++) {
+            movePrio.add(cur.moved[i]? movePrio.size(): 0, i);
         }
 
-        int i = firstMove;
-        do {
+        for (Integer individual : movePrio) {
             // If current position isn't valid, an individual who hasn't moved this turn (not depth!) needs to resolve the issue
-            if(!isValid(cur.positions, instance.graph.distanceMatrix, instance.D, null) && (cur).moved[i]){ // O(p^2)
-                i = (i + 1) % numIndividuals;
+            if(!isValid(cur.positions, instance.graph.distanceMatrix, instance.D, null) && (cur).moved[individual]){ // O(p^2)
                 continue;
             }
-
             // Generate all 1D moves that the individual can take and add to queue
-            CreateIndividualMoves(cur, instance, queue, createdPositions, i); // O(np^2)
-            i = (i + 1) % numIndividuals;
-
-        } while (i != firstMove); // p loops of O(np^2) => O(np^3)
+            CreateIndividualMoves(cur, instance, queue, createdPositions, individual); // O(np^2)
+        } // p loops of O(np^2) => O(np^3)
     } // O(np^3) => O(n)
 
     /**

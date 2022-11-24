@@ -43,6 +43,6 @@ public class Node1D extends Node{
 
     @Override
     public String toString() {
-        return parent+" d|"+depth+"|-t("+turn+")-p"+Arrays.toString(positions)+"-"+Arrays.toString(moved)+"("+mover+")";
+        return super.toString()+"|-t("+turn+")-p"+Arrays.toString(moved)+"("+mover+")";
     }
 }
