@@ -12,16 +12,18 @@ public class BFS {
      * <p>- branching done by allowing only one move at a time
      * <p>- pruning1: each position that has already been visited cannot generate a new node
      * <p>- pruning2: each position that violates the distance constraint not generated
+     * <p>-DEpruning: it is possible for a state to be reached earlier in terms of tree depth but the path taken to reach
+     * it is not the shortest path in terms of turns taken to move and will be discovered later in the tree
+     * => if such an instance occurs, the new shortest path parent gets plugged in as the new parent of that state and this change gets propagated downwards
      * <p></p>
      * @param instance instance of problem
-     * @param verbose prints width at different depths if true
      * @param move1D does 1 dimensional moves if true, otherwise everyone can move at the same time
      * @return first node in the tree that has the target destinations if found, else null.
      * <p></p>
      * @implNote 1D: O(n^(1+p)p^3). not 1D: O(n^(2+p)p^2) => 1D: O(n^(1+p)). not 1D: O(n^(2+p)) asymptotically.
      * The 1D moves reduce complexity by a factor of n.
      */
-    public static Solution search(Instance instance, boolean verbose, boolean move1D){
+    public static Solution search(Instance instance, boolean move1D){
 
         long start = System.currentTimeMillis();
 
@@ -37,8 +39,6 @@ public class BFS {
         }
         BFS.root = root;
         queue.add(root);
-
-        int prev = root.depth; // Can be removed. Is not used by algorithm. Only printing
 
         // Pruning step: if a unique position (for each individual) has already been seen, there is no reason to explore it again at deeper depth
         // Impossible for it to result in a better solution because of BFS
@@ -58,14 +58,6 @@ public class BFS {
             // If turns taken is greater than T => node too deep => skip
             if( (move1D && ((Node1D)cur).turn>instance.T) || (!move1D && cur.depth>=instance.T)){ // O(1)
                 continue;
-            }
-
-            // Irrelevant. Only printing.
-            if(cur.depth!=prev){
-                prev = cur.depth;
-                if(verbose){
-                    System.out.println("Width at depth "+cur.depth+": "+queue.size());
-                }
             }
 
             if(move1D) {

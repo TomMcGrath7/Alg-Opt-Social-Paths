@@ -76,7 +76,7 @@ class Solution{
         }
     }
 
-    public boolean correct(Instance instance){
+    public boolean correct(Instance instance, boolean verbose){
         if(states.size()==0 || paths.size()==0){
             return false;
         }
@@ -84,7 +84,9 @@ class Solution{
         if(!Arrays.equals(states.get(0), instance.starts) &&
                 !Arrays.equals(states.get(states.size()-1), instance.ends) &&
                 states.size()> instance.T){
-            System.out.println("Length violation");
+            if(verbose) {
+                System.out.println("Length violation");
+            }
             return false;
         }
         // For every state:
@@ -96,20 +98,23 @@ class Solution{
                 // Distance violation between pairs
                 for (int p2 = p1+1; p2 < current.length; p2++) {
                     if(instance.graph.distanceMatrix[current[p1]][current[p2]]<=instance.D){
-                        System.out.println("Distance violation:");
-                        System.out.println("Position "+ Arrays.toString(current));
-                        System.out.println("Idx "+p1+" vs "+p2);
-                        System.out.println("Distance matrix\n"+Helper.matrix2DString(instance.graph.distanceMatrix));
 
+                        if(verbose) {
+                            System.out.println("Distance violation:");
+                            System.out.println("Position " + Arrays.toString(current));
+                            System.out.println("Idx " + p1 + " vs " + p2);
+                            System.out.println("Distance matrix\n" + Helper.matrix2DString(instance.graph.distanceMatrix));
+                        }
                         return false;
                     }
                 }
                 // Transition violation
                 if(current[p1]!=next[p1] && instance.graph.adjacencyMatrix[current[p1]][next[p1]]!=1){
-                    System.out.println("Transition Violation:");
-                    System.out.println("Position now "+ Arrays.toString(current) +" Position next "+ Arrays.toString(next));
-                    System.out.println("Adjacency matrix\n"+Helper.matrix2DString(instance.graph.adjacencyMatrix));
-
+                    if(verbose) {
+                        System.out.println("Transition Violation:");
+                        System.out.println("Position now " + Arrays.toString(current) + " Position next " + Arrays.toString(next));
+                        System.out.println("Adjacency matrix\n" + Helper.matrix2DString(instance.graph.adjacencyMatrix));
+                    }
                     return false;
                 }
             }

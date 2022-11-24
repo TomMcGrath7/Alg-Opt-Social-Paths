@@ -46,7 +46,7 @@ public class Node1D extends Node{
     public void changeParent(Node parent) {
         super.changeParent(parent);
 
-
+        int oldMover=mover;
         for (int i = 0; i < parent.positions.length; i++) {
             if(parent.positions[i]!=positions[i]){
                 mover = i;
@@ -55,7 +55,9 @@ public class Node1D extends Node{
         }
 
         initParent((Node1D) parent);
-
+        if(mover==oldMover){
+            return;
+        }
         for (Node child : children) {
             child.changeParent(this);
         }
