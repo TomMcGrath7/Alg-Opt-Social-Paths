@@ -52,7 +52,7 @@ public class BFS {
 
             // If reached target destination for all => solution found.
             if(Arrays.equals(cur.positions, instance.ends)){ // O(1)
-                return new Solution(cur, (System.currentTimeMillis() - start)/1000.0, move1D);
+                return new Solution(cur, (System.currentTimeMillis() - start)/1000.0, move1D, instance.T);
             }
 
             // If turns taken is greater than T => node too deep => skip
@@ -74,7 +74,7 @@ public class BFS {
                 CreateMultiDMoves(cur, instance, queue, createdPositions); // O(n^2p^2) and queue.size += n^2 at most
             }
         }
-        return new Solution(null, (System.currentTimeMillis() - start)/1000.0, move1D);
+        return new Solution(null, (System.currentTimeMillis() - start)/1000.0, move1D, instance.T);
     } // 1D: O(n^(1+p)p^3). not 1D: O(n^(2+p)p^2)
 
     /**
@@ -93,14 +93,14 @@ public class BFS {
             movePrio.add(cur.moved[i]? movePrio.size(): 0, i);
         }
 
-        for (Integer individual : movePrio) {
-            // If current position isn't valid, an individual who hasn't moved this turn (not depth!) needs to resolve the issue
-            if(!isValid(cur.positions, instance.graph.distanceMatrix, instance.D, null) && (cur).moved[individual]){ // O(p^2)
+        for (Integer individual : movePrio) { // p loops of O(np^2) => O(np^3)
+            // If individual already moved and current state is not valid => Cannot go to next turn, someone else needs to resolve it.
+            if(cur.moved[individual] && !isValid(cur.positions, instance.graph.distanceMatrix, instance.D, null)){ // O(p^2)
                 continue;
             }
             // Generate all 1D moves that the individual can take and add to queue
             CreateIndividualMoves(cur, instance, queue, createdPositions, individual); // O(np^2)
-        } // p loops of O(np^2) => O(np^3)
+        }
     } // O(np^3) => O(n)
 
     /**
@@ -112,7 +112,7 @@ public class BFS {
      * @param individual index that gets to move
      * @implNote O(np^2) => O(n) asymptotically. Worst case: generates n nodes
      */
-    private static void CreateIndividualMoves(Node cur, Instance instance, Queue<Node> queue, boolean[][] createdPositions, int individual){
+    private static void CreateIndividualMoves(Node1D cur, Instance instance, Queue<Node> queue, boolean[][] createdPositions, int individual){
         List<Integer> options = instance.graph.adjacencyList.get(cur.positions[individual]);
         for (Integer move : options) { // n loops of O(p^2)
             int[] curAr = new int[cur.positions.length]; // O(p)
@@ -120,7 +120,7 @@ public class BFS {
 
             curAr[individual] = move;
 
-            if(!createdPositions[curAr[0]][curAr[1]] && isValid(curAr, instance.graph.distanceMatrix, instance.D, ((Node1D)cur).moved)){
+            if(!createdPositions[curAr[0]][curAr[1]] && isValid(curAr, instance.graph.distanceMatrix, instance.D, cur.complete? new boolean[cur.moved.length] : cur.moved)){
                 queue.add(new Node1D(curAr, cur, false, individual));
                 createdPositions[curAr[0]][curAr[1]] = true;
             } // O(p^2)
@@ -170,7 +170,7 @@ public class BFS {
             for (int j = i+1; j < positions.length; j++) { // p loops of O(1) => O(p)
                 // Allows an individual to move within the distance limit of another if the other hasn't moved yet
                 // This is because if the other hasn't moved yet => he can move away from the ones that are too close in the same turn
-                int dist = moved==null? D: moved[i]|| moved[j]? D : D-1;
+                int dist = moved==null? D: moved[i] && moved[j]? D : D-1;
                 if(distanceMatrix[positions[i]][positions[j]]<=dist){
                     return false;
                 }

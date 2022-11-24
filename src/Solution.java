@@ -10,7 +10,7 @@ class Solution{
     public final int K;
     public final double time; // in seconds
 
-    public Solution(Node node, double timeInSeconds, boolean move1D){
+    public Solution(Node node, double timeInSeconds, boolean move1D, int T){
         this.time = timeInSeconds;
         if(node==null){
             paths = new ArrayList<>();
@@ -36,7 +36,7 @@ class Solution{
                 }
             }
         }
-        K = states.size()-1;
+        K = states.size()==0? T+1 : states.size()-1;
     }
 
     public Solution(String sol){

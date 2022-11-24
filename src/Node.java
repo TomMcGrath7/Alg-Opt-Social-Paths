@@ -26,6 +26,11 @@ public class Node {
         }
     }
 
+    public void changeParent(Node parent){
+        this.parent = parent;
+        this.depth = parent.depth+1;
+    }
+
     public List<int[]> statePath(){
         List<int[]> path = new ArrayList<>();
         if(parent!=null){
@@ -43,14 +48,10 @@ public class Node {
         return n;
     }
 
-    @Override
-    public String toString() {
-        return depth+"-"+Arrays.toString(positions);
-    }
-
     public String treeString(){
         return treeString(0, 0);
     }
+
     private String treeString(int relativeDepth, int num){
         StringBuilder sb = new StringBuilder();
         sb.append("\t".repeat(relativeDepth)).append(num).append(".").append(Arrays.toString(positions));
@@ -58,6 +59,11 @@ public class Node {
             sb.append("\n").append(children.get(i).treeString(relativeDepth+1, i));
         }
         return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return depth+"-"+Arrays.toString(positions);
     }
 
     public String toDeepString(){
