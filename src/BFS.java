@@ -43,8 +43,8 @@ public class BFS {
         // Pruning step: if a unique position (for each individual) has already been seen, there is no reason to explore it again at deeper depth
         // Impossible for it to result in a better solution because of BFS
         // => Removing it all together reduces the amount options dramatically as the tree expands
-        boolean[][] createdPositions = new boolean[instance.graph.adjacencyMatrix.length][instance.graph.adjacencyMatrix.length];  // TODO p>2? pD array or p nested lists
-        createdPositions[root.positions[0]][root.positions[1]] =true;
+        Node[][] createdPositions = new Node[instance.graph.adjacencyMatrix.length][instance.graph.adjacencyMatrix.length];  // TODO p>2? pD array or p nested lists
+        createdPositions[root.positions[0]][root.positions[1]] = root;
 
         while(!queue.isEmpty()){ // There are only n^p unique states => n^p loops of 1D O(np^3) or not 1D O(n^2p^2) => 1D: O(n^(1+p)p^3). not 1D: O(n^(2+p)p^2)
             Node cur = queue.remove();
@@ -56,7 +56,7 @@ public class BFS {
             }
 
             // If turns taken is greater than T => node too deep => skip
-            if( (move1D && ((Node1D)cur).turn>=instance.T) || (!move1D && cur.depth>=instance.T)){ // O(1)
+            if( (move1D && ((Node1D)cur).turn>instance.T) || (!move1D && cur.depth>=instance.T)){ // O(1)
                 continue;
             }
 
@@ -85,7 +85,7 @@ public class BFS {
      * @param createdPositions positions that have already been created earlier in the tree => no need to explore at deeper depths.
      * @implNote O(np^3) => O(n) asymptotically. Worst case: generates np nodes.
      */
-    private static void Create1DMoves(Node1D cur, Instance instance, Queue<Node> queue, boolean[][] createdPositions){
+    private static void Create1DMoves(Node1D cur, Instance instance, Queue<Node> queue, Node[][] createdPositions){
         // Make who has the opportunity to move first change each sub-turn
         // => stops an individual from moving to its final destination individually and then the next one, etc...
         List<Integer> movePrio = new ArrayList<>();
@@ -112,7 +112,7 @@ public class BFS {
      * @param individual index that gets to move
      * @implNote O(np^2) => O(n) asymptotically. Worst case: generates n nodes
      */
-    private static void CreateIndividualMoves(Node1D cur, Instance instance, Queue<Node> queue, boolean[][] createdPositions, int individual){
+    private static void CreateIndividualMoves(Node1D cur, Instance instance, Queue<Node> queue, Node[][] createdPositions, int individual){
         List<Integer> options = instance.graph.adjacencyList.get(cur.positions[individual]);
         for (Integer move : options) { // n loops of O(p^2)
             int[] curAr = new int[cur.positions.length]; // O(p)
@@ -120,10 +120,18 @@ public class BFS {
 
             curAr[individual] = move;
 
-            if(!createdPositions[curAr[0]][curAr[1]] && isValid(curAr, instance.graph.distanceMatrix, instance.D, cur.complete? new boolean[cur.moved.length] : cur.moved)){
-                queue.add(new Node1D(curAr, cur, false, individual));
-                createdPositions[curAr[0]][curAr[1]] = true;
-            } // O(p^2)
+            Node1D curBest = (Node1D) createdPositions[curAr[0]][curAr[1]];
+            Node1D n = new Node1D(curAr, cur, false, individual);
+            if(curBest!=null && n.turn< curBest.turn){
+                curBest.changeParent(cur);
+                cur.children.remove(n);
+            }
+            else if(createdPositions[curAr[0]][curAr[1]]==null && isValid(curAr, instance.graph.distanceMatrix, instance.D, n.complete? new boolean[n.moved.length] : n.moved)){
+                queue.add(n);
+                createdPositions[curAr[0]][curAr[1]] = n;
+            }else{
+                cur.children.remove(n);
+            }// O(p^2)
         } // O(np^2)
     } // O(np^2) = O(n)
 
@@ -135,7 +143,7 @@ public class BFS {
      * @param createdPositions positions that have already been created earlier in the tree => no need to explore at deeper depths
      * @implNote O(n^2p^2) => O(n^2) asymptotically. Worst case: generates n^2 nodes.
      */
-    private static void CreateMultiDMoves(Node cur, Instance instance, Queue<Node> queue, boolean[][] createdPositions){
+    private static void CreateMultiDMoves(Node cur, Instance instance, Queue<Node> queue, Node[][] createdPositions){
         // TODO p>2? options list for each individual
         List<Integer> options1 = instance.graph.adjacencyList.get(cur.positions[0]);
         options1.add(cur.positions[0]); // size = n+1
@@ -147,9 +155,10 @@ public class BFS {
                 int[] curAr = new int[cur.positions.length];
                 curAr[0] = op1;
                 curAr[1] = op2;
-                if(!createdPositions[curAr[0]][curAr[1]] && isValid(curAr, instance.graph.distanceMatrix, instance.D, null)){ // O(p^2)
-                    queue.add(new Node(curAr, cur, false)); // O(1)
-                    createdPositions[curAr[0]][curAr[1]] = true;
+                if(createdPositions[curAr[0]][curAr[1]]==null && isValid(curAr, instance.graph.distanceMatrix, instance.D, null)){ // O(p^2)
+                    Node n = new Node(curAr, cur, false);
+                    queue.add(n); // O(1)
+                    createdPositions[curAr[0]][curAr[1]] = n;
                 }
             }
         }

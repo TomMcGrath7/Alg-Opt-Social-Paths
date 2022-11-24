@@ -7,7 +7,7 @@ import java.util.Arrays;
  */
 public class Node1D extends Node{
     public boolean[] moved;
-    public final int mover;
+    public int mover;
     public int turn;
     public boolean complete;
 
@@ -45,7 +45,20 @@ public class Node1D extends Node{
     @Override
     public void changeParent(Node parent) {
         super.changeParent(parent);
-        initParent((Node1D)parent);
+
+
+        for (int i = 0; i < parent.positions.length; i++) {
+            if(parent.positions[i]!=positions[i]){
+                mover = i;
+                break;
+            }
+        }
+
+        initParent((Node1D) parent);
+
+        for (Node child : children) {
+            child.changeParent(this);
+        }
     }
 
     @Override

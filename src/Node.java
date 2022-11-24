@@ -12,6 +12,8 @@ public class Node {
     public Node parent;
     public boolean visited;
 
+    public List<Node> previousParents = new ArrayList<>();
+
     public int depth;
     public Node(int[] positions, Node parent, boolean visited){ // O(1)
         this.positions = positions;
@@ -27,8 +29,18 @@ public class Node {
     }
 
     public void changeParent(Node parent){
+        previousParents.add(this.parent);
         this.parent = parent;
         this.depth = parent.depth+1;
+    }
+
+    public List<Node> nodePath(){
+        List<Node> path = new ArrayList<>();
+        if(parent!=null){
+            path.addAll(parent.nodePath());
+        }
+        path.add(this);
+        return path;
     }
 
     public List<int[]> statePath(){

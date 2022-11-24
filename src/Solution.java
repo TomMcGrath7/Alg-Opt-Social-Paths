@@ -9,25 +9,31 @@ class Solution{
     public final List<List<Integer>> paths;
     public final int K;
     public final double time; // in seconds
+    public final Node solNode;
 
     public Solution(Node node, double timeInSeconds, boolean move1D, int T){
+        solNode = node;
         this.time = timeInSeconds;
         if(node==null){
             paths = new ArrayList<>();
             states = new ArrayList<>();
         }else {
-            states = node.statePath();
+
             if(move1D) {
-                for (int i = 0; i < states.size() - 2; i++) {
-                    int[] c0 = states.get(i);
-                    int[] c2 = states.get(i + 2);
-                    if (c0[0] != c2[0] && c0[1] != c2[1]) {
-                        // always results in a correct move because 2 players, 1 move at a time:
-                        // If both players move in 2 iteration, then they could both move in 1.
-                        states.remove(i + 1);
+                states = new ArrayList<>();
+                List<Node> nodePath = node.nodePath();
+                states.add(nodePath.get(0).positions);
+                for (int i = 1; i < nodePath.size()-1; i++) {
+                    if(((Node1D)nodePath.get(i)).turn != ((Node1D)nodePath.get(i+1)).turn){
+                        states.add(nodePath.get(i).positions);
                     }
                 }
+                states.add(nodePath.get(nodePath.size()-1).positions);
+
+            }else{
+                states = node.statePath();
             }
+
             paths = new ArrayList<>();
             for (int i = 0; i < states.get(0).length; i++) {
                 paths.add(new ArrayList<>());
@@ -40,6 +46,8 @@ class Solution{
     }
 
     public Solution(String sol){
+        solNode = null;
+
         String[] ar = sol.split("\n");
         K = Integer.parseInt(ar[0]);
         if(ar.length==2){
