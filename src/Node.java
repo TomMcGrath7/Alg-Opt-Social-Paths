@@ -67,6 +67,6 @@ public class Node {
     }
 
     public String toDeepString(){
-        return parent.toDeepString() + this.toString();
+        return parent==null? this.toString() : parent.toDeepString() + this.toString();
     }
 }

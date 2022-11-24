@@ -168,7 +168,7 @@ public class BFS {
     public static boolean isValid(int[] positions, int[][] distanceMatrix, int D, boolean[] moved){
         for (int i = 0; i < positions.length; i++) { // p loops of O(p) => O(p^2)
             for (int j = i+1; j < positions.length; j++) { // p loops of O(1) => O(p)
-                // Allows an individual to move within the distance limit of another if the other hasn't moved yet
+                // Allows an individual to move within the distance limit of another if one of the 2 hasn't moved yet
                 // This is because if the other hasn't moved yet => he can move away from the ones that are too close in the same turn
                 int dist = moved==null? D: moved[i] && moved[j]? D : D-1;
                 if(distanceMatrix[positions[i]][positions[j]]<=dist){
