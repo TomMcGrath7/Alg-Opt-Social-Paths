@@ -13,6 +13,7 @@ import java.util.Arrays;
 public class Instance {
     public int D;
     public int T;
+    public int p;
     public int[] starts;
     public int[] ends;
     public Graph graph;
@@ -41,6 +42,7 @@ public class Instance {
         }
 
         this.graph = new Graph(Integer.parseInt(params[0]), Arrays.copyOfRange(lines, 2, lines.length)); // O(m) copy + O(n^3) distance matrix => O(n^3+m)
+        this.p = starts.length;
 
     }
 

@@ -9,6 +9,7 @@ import java.util.List;
  */
 public class Graph {
 
+    public int V;
     public int[][] adjacencyMatrix;
 
     public List<List<Integer>> adjacencyList;
@@ -27,7 +28,7 @@ public class Graph {
             adjacencyMatrix[endsi[0]-1][endsi[1]-1] = 1;
             adjacencyMatrix[endsi[1]-1][endsi[0]-1] = 1;
         }
-
+        V = vertNum;
         adjacencyList = Graph.generateAdjacencyMatrix(adjacencyMatrix); // O(n^2)
 
         distanceMatrix = Graph.generateDistanceMatrix(adjacencyMatrix); // O(n^3)

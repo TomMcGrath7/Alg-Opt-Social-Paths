@@ -11,6 +11,22 @@ import java.util.stream.Stream;
  */
 public class Helper {
 
+    public static int to1D(int[] idx, int size){
+        int i = idx[0];
+        for (int j = 1; j < idx.length; j++) {
+            i += Math.pow(size, j) * idx[j];
+        }
+        return i;
+    }
+
+    public static int boolToInt(boolean[] arr){
+        StringBuilder s = new StringBuilder();
+        for (boolean b : arr) {
+            s.append(b ? "1" : "0");
+        }
+        return Integer.valueOf(s.toString(), 2)-1;
+    }
+
     public static String read(String filename){
         StringBuilder sb = new StringBuilder();
         try {

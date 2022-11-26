@@ -8,56 +8,38 @@ class Solution{
     public final List<int[]> states;
     public final List<List<Integer>> paths;
     public final int K;
-    public final double time; // in seconds
-    public final Node solNode;
 
-    public Solution(Node node, double timeInSeconds, boolean move1D, int T){
-        solNode = node;
-        this.time = timeInSeconds;
+    public Solution(BFSNode node, int T){
         if(node==null){
+            states=  new ArrayList<>();
             paths = new ArrayList<>();
-            states = new ArrayList<>();
-        }else {
-
-            if(move1D) {
-                states = new ArrayList<>();
-                List<Node> nodePath = node.nodePath();
-                states.add(nodePath.get(0).positions);
-                for (int i = 1; i < nodePath.size()-1; i++) {
-                    if(((Node1D)nodePath.get(i)).turn != ((Node1D)nodePath.get(i+1)).turn){
-                        states.add(nodePath.get(i).positions);
-                    }
+            K = T+1;
+            return;
+        }
+        List<BFSNode> p = node.getCompactedPath();
+        states = new ArrayList<>();
+        paths = new ArrayList<>();
+        for (BFSNode bfsNode : p) {
+            states.add(bfsNode.state);
+            for (int i = 0; i < bfsNode.state.length; i++) {
+                if(paths.size()<bfsNode.state.length){
+                    paths.add(new ArrayList<>());
                 }
-                states.add(nodePath.get(nodePath.size()-1).positions);
-
-            }else{
-                states = node.statePath();
-            }
-
-            paths = new ArrayList<>();
-            for (int i = 0; i < states.get(0).length; i++) {
-                paths.add(new ArrayList<>());
-                for (int[] state : states) {
-                    paths.get(i).add(state[i]);
-                }
+                paths.get(i).add(bfsNode.state[i]);
             }
         }
-        K = states.size()==0? T+1 : states.size()-1;
+        K = states.size()-1;
     }
 
     public Solution(String sol){
-        solNode = null;
 
         String[] ar = sol.split("\n");
         K = Integer.parseInt(ar[0]);
         if(ar.length==2){
-            time = Double.parseDouble(ar[1].split(" ")[0].replace(",","."));
             states = new ArrayList<>();
             paths = new ArrayList<>();
         }
         else {
-            time = Double.parseDouble(ar[3].split(" ")[0].replace(",","."));
-
             states = new ArrayList<>();
             paths = new ArrayList<>();
 
@@ -131,7 +113,6 @@ class Solution{
             sb.append("\n");
             path.forEach(i -> sb.append(i+1).append(" "));
         }
-        sb.append("\n").append(time).append(" seconds");
         return sb.toString();
     }
 }
