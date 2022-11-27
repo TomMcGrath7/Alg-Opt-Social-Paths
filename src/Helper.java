@@ -10,7 +10,6 @@ import java.util.stream.Stream;
  * Helper methods
  */
 public class Helper {
-
     public static String read(String filename){
         StringBuilder sb = new StringBuilder();
         try {
@@ -25,6 +24,13 @@ public class Helper {
             System.out.println("File '" +filename+"' does not exist");
         }
         return sb.toString().trim();
+    }
+
+    public static List<String> listFilesUsingJavaIO(String dir, String extension) {
+        return Stream.of(Objects.requireNonNull(new File(dir).listFiles()))
+                .filter(file -> !file.isDirectory())
+                .map(File::getName)
+                .filter(f -> f.endsWith(extension)).sorted().collect(Collectors.toList());
     }
 
     public static String matrix2DString(int[][] mat){
@@ -58,12 +64,4 @@ public class Helper {
         }
         return sb.toString();
     }
-
-    public static List<String> listFilesUsingJavaIO(String dir, String extension) {
-        return Stream.of(Objects.requireNonNull(new File(dir).listFiles()))
-                .filter(file -> !file.isDirectory())
-                .map(File::getName)
-                .filter(f -> f.endsWith(extension)).sorted().collect(Collectors.toList());
-    }
-
 }

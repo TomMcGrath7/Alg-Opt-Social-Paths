@@ -16,7 +16,7 @@ public class Instance {
     public int[] starts;
     public int[] ends;
     public Graph graph;
-
+    public int p;
     /**
      * @param input as defined in assignment:
      *              <p>line 1: N M T D - N = # of vertices, M = # edges, T = time limit, D = distance limit
@@ -35,6 +35,7 @@ public class Instance {
         this.starts = new int[players.length/2]; // O(p)
         this.ends = new int[starts.length]; // O(p)
 
+        this.p = starts.length;
         for (int i = 0; i < starts.length; i++) { // p loops of O(1) => O(p)
             starts[i] = Integer.parseInt(players[2*i]) - 1;
             ends[i] = Integer.parseInt(players[(2*i)+1]) - 1;
