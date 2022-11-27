@@ -1,14 +1,14 @@
 import java.util.Arrays;
 
-/** Represents an instance of the problem:
- * -graph: graph to traverse
- * -starts: starting positions
- * -ends: target positions
- * -D: min distance between individuals
- * -T: time limit
- * <p>
- * -1 to every vertex value from input file because they start at 1 and vertex value is used for indexing
- * => !!! output will be offset by -1 !!!
+/** Represents an instance of the problem: <br>
+ * -graph: graph to traverse <br>
+ * -starts: starting positions <br>
+ * -ends: target positions <br>
+ * -D: min distance between players <br>
+ * -T: time limit <br>
+ * -p: num of players <br>
+ * <br>
+ * Input file indexes vertices from 1 to n => -1 to every vertex. However, Solution object takes corrects for this.
  */
 public class Instance {
     public int D;
@@ -23,7 +23,7 @@ public class Instance {
      *              <p>line 2: s1 e1 s2 e2 - start and end for each player
      *              <p>other lines: x y - representing edge, where 0 < x, y <= N integer value representing vertices
      */
-    public Instance(String input){ // O(n^3+m)
+    public Instance(String input){ // O(n^3+m) => sparse graph, m a lot smaller than n => O(n^3)
 
         String[] lines = input.split("\n"); // 2+m lines of limited length => O(m)
 

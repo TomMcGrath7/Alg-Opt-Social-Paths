@@ -2,9 +2,9 @@ import java.util.ArrayList;
 import java.util.List;
 /**
  * Graph with edges represented as:
- * <p> - adjacency matrix
- * <p> - adjacency list
- * <p> Also generates distance matrix representing the # of vertex between each pair of vertices.
+ * - adjacency matrix <br>
+ * - adjacency list <br>
+ * - distance matrix representing the distance between each pair of vertices <br>
  * @implNote  vertex values go from 0 to N-1. Input file has vertex values from 1 to N !!! -1 to output vertex values !!!
  */
 public class Graph {
@@ -15,6 +15,7 @@ public class Graph {
     public int[][] distanceMatrix;
 
     /**
+     * Complexity O(n^3) due to distance matrix
      * @param vertNum number of vertices N
      * @param edges edges represented in string form (x y <- where x and y are vertex indices 1 to N)
      */
@@ -34,17 +35,13 @@ public class Graph {
         V = vertNum;
     }
 
-    @Override
-    public String toString() {
-
-        return "Graph{" +
-                "adjacencyMatrix=\n" + Helper.matrix2DString(adjacencyMatrix) +
-                ", distanceMatrix=\n" + Helper.matrix2DString(distanceMatrix) +
-                "\n, list=\n" + Helper.adjacencyListString(adjacencyList) +
-                '}';
-    }
-
-    // TODO can be made faster probably (just a path finding algo between all pairs of vertices)
+    // TODO can be made faster probably (Johnson's Algorithm O(n^2 * log(n) + n * m) OR Djikstra over each pair)
+    /**
+     * Floyd Warshall Algorithm
+     * Get the shortest distance between each pair of vertices
+     * @param adjacencyMatrix adjacency matrix representation of graph
+     * @return distance matrix with the shortest distance between each pair of vertices
+     */
     public static int[][] generateDistanceMatrix(int[][] adjacencyMatrix){ // O(n^3)
         int[][] distanceMatrix = new int[adjacencyMatrix.length][adjacencyMatrix.length];
         for (int i = 0; i < distanceMatrix.length; i++) { // n loops of O(n) => O(n^2)
@@ -88,5 +85,15 @@ public class Graph {
             min = Math.min(min, ar1[i]+ar2[i]);
         }
         return min;
+    }
+
+    @Override
+    public String toString() {
+
+        return "Graph{" +
+                "adjacencyMatrix=\n" + Helper.matrix2DString(adjacencyMatrix) +
+                ", distanceMatrix=\n" + Helper.matrix2DString(distanceMatrix) +
+                "\n, list=\n" + Helper.adjacencyListString(adjacencyList) +
+                '}';
     }
 }

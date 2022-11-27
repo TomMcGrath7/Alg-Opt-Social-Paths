@@ -4,11 +4,15 @@ import java.util.List;
 
 class Solution{
 
-    // entry i of list is positions of each individual is at step i of solution
+    // entry i of list is positions of each player is at step i of solution
     public final List<int[]> states;
     public final List<List<Integer>> paths;
     public final int K;
 
+    /**
+     * @param node node to compress and turn into a solution
+     * @implNote O(T)
+     */
     public Solution(BFSNode node){
         K = node.turn;
         states = new ArrayList<>();
@@ -16,20 +20,24 @@ class Solution{
 
         if(node.state!=null) {
             addState(node.state);
-            while (node.parent != null) {
+            while (node.parent != null) { // Worst case: T loops => O(Tp) => asymptotically O(T)
                 if (node.parent.turn != node.turn) {
                     addState(node.parent.state);
                 }
-                node = node.parent;
+                node = node.parent; // O(p)
             }
-            addState(node.state);
+            addState(node.state); // O(p)
         }
 
     }
 
+    /**
+     * @param s state to add to path
+     * @implNote O(p)
+     */
     private void addState(int[] s){
-        states.add(0, s);
-        for (int i = 0; i < s.length; i++) {
+        states.add(0, s); // O(1) bc arraylist
+        for (int i = 0; i < s.length; i++) { // O(p)
             if(paths.size()<=i){
                 paths.add(new ArrayList<>());
             }
@@ -64,6 +72,16 @@ class Solution{
         }
     }
 
+    /**
+     * Verifies the correctness of the solution given the problem instance: <br>
+     * - Not too long <br>
+     * - Starts and ends at correct place <br>
+     * - No state has a distance violation <br>
+     * - All transitions are possible <br>
+     * @param instance problem instance
+     * @param verbose if true and finds an error, prints what the error is. Else prints nothing
+     * @return true if correct else false
+     */
     public boolean correct(Instance instance, boolean verbose){
         if(states.size()==0 || paths.size()==0){
             return false;
